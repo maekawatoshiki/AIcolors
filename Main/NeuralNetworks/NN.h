@@ -145,7 +145,7 @@ int NNoutput(int learning)
 	double net_input, tmp;
 	char s[0xFF] = { 0 };
 
-	for (i = 0; i < 1000; i++)
+	for (i = 0; i < 10000; i++)
 	{
 		for (i = 0; i < PATTERNS; i++)
 			x[i] = (double)(rand() % 0xFF) / 0xFF;
@@ -155,10 +155,10 @@ int NNoutput(int learning)
 		for (j = 0; j < HIDDEN_NUM; j++)
 		{
 			net_input = 0;
+
 			for (i = 0; i < PATTERNS + 1; i++)
-			{
-				net_input = net_input + w_i[i][j] * x[i];
-			}
+				net_input += w_i[i][j] * x[i];
+	
 			h[j] = tanh(net_input);
 		}
 
@@ -171,19 +171,10 @@ int NNoutput(int learning)
 
 			y[j] = sigmoid(net_input);
 		}
-
-		/*for (j = 0; j < PATTERNS; j++)
-		{
-			if (x[j] && j >= 0 && j < 256)
-				r = j;
-			if (x[j] && j >= 256 && j < 512)
-				g = j - 256;
-			if (x[j] && j >= 512 && j < 768)
-				b = j - 512;
-		}*/
 		r = x[0] * 0xFF;
 		g = x[1] * 0xFF;
 		b = x[2] * 0xFF;
+
 		if (y[0] > 0.95) break;
 	}
 	sprintf(s, "%lf", y[0]);
