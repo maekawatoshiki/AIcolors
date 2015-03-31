@@ -9,7 +9,7 @@
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib, "comctl32.lib")
 #define MAX_LOADSTRING 100
-#define WND_WIDTH 200
+#define WND_WIDTH 1300
 #define WND_HEIGHT 100
 #define ID_NGBUTTON 100
 #define ID_OKBUTTON 101
@@ -95,10 +95,14 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-	hInst = hInstance; // Store instance handle in our global variable
+	hInst = hInstance;
+	APPBARDATA  tb;
+
+	tb.cbSize = sizeof(tb);
+	SHAppBarMessage(ABM_GETTASKBARPOS, &tb);
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_POPUP,
-		100, 100, WND_WIDTH, WND_HEIGHT, NULL, NULL, hInstance, NULL);
+		tb.rc.left, tb.rc.top, WND_WIDTH, WND_HEIGHT, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd)
 	{
@@ -140,22 +144,22 @@ DWORD WINAPI ChangeColor(LPVOID *data)
 	while (1)
 	{
 		saveNextColor = NNoutput(0);
-		diff[0] = (double)(GetRValue(saveNextColor) - GetRValue(nextColor)) / 10.0;
-		diff[1] = (double)(GetGValue(saveNextColor) - GetGValue(nextColor)) / 10.0;
-		diff[2] = (double)(GetBValue(saveNextColor) - GetBValue(nextColor)) / 10.0;
+		diff[0] = (double)((GetRValue(saveNextColor) - GetRValue(nextColor)) / 10.0);
+		diff[1] = (double)((GetGValue(saveNextColor) - GetGValue(nextColor)) / 10.0);
+		diff[2] = (double)((GetBValue(saveNextColor) - GetBValue(nextColor)) / 10.0);
 		
 		for (int i = 0; i < 10; i++)
 		{
 			nextColor += (int)diff[0];
-			nextColor += (int)diff[1] << 8;
-			nextColor += (int)diff[2] << 16;
+			nextColor += (int)diff[1] * 256;
+			nextColor += (int)diff[2] * 65536;
 			nextColor %= 0xFFFFFF;
 			InvalidateRect(hWnd, &rc, TRUE);
-			Sleep(20);
+			Sleep(50);
 		}
 		nextColor = saveNextColor;
 		InvalidateRect(hWnd, &rc, TRUE);
-		Sleep(3000); 
+		Sleep(3000); if (rand()%2) w = time(0) ^ clock();
 	}
 	ExitThread(0);
 }
@@ -180,8 +184,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC hdc;
 
 	rc.left = rc.top = 0;
-	rc.bottom = 100;
-	rc.right = 200;
+	rc.bottom = WND_HEIGHT;
+	rc.right = WND_WIDTH;
 
 	switch (message)
 	{
@@ -203,8 +207,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (i == 0) MessageBox(0, "好きな色を五つ、選択してください", 0, 0);
 				if (i == 5) MessageBox(0, "嫌いな色を五つ、選択してください", 0, 0);
 				CreateRGB();
-				SelectObject(hdc, CreateSolidBrush(RGB(colorR, colorG, colorB)));
-				PatBlt(hdc, 0, 0, 200, 100, PATCOPY);
 
 				txy[i].x[0] = (double)colorR / 0xFF;
 				txy[i].x[1] = (double)colorG / 0xFF;
@@ -238,10 +240,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
+
 		if (selendFlag)
 		{
 			SelectObject(hdc, CreateSolidBrush(nextColor));
-			PatBlt(hdc, 0, 0, 200, 100, PATCOPY);
+			PatBlt(hdc, 0, 0, WND_WIDTH, WND_HEIGHT, PATCOPY);
 		}
 		
 		EndPaint(hWnd, &ps);

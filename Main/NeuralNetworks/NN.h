@@ -104,7 +104,6 @@ int NNLearning(int learning)
 				e += 0.5 * pow(txy[sample].y[j] - y[j], 2.0);
 			}
 			
-			//‚±‚±‚©‚ç‹t“`”d
 			for (j = 0; j < OUTPUT_NUM; j++)
 				y_back[j] = (y[j] - txy[sample].y[j]) * (1.0 - y[j]) * y[j];
 
