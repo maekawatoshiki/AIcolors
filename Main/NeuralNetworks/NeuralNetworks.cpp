@@ -159,7 +159,7 @@ DWORD WINAPI ChangeColor(LPVOID *data)
 		}
 		nextColor = saveNextColor;
 		InvalidateRect(hWnd, &rc, TRUE);
-		Sleep(3000); if (rand()%2) w = time(0) ^ clock();
+		Sleep(4000); if ( rand() % 2 ) w = time(0) ^ clock();
 	}
 	ExitThread(0);
 }
