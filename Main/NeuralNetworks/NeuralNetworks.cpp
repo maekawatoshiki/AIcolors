@@ -92,12 +92,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	SHAppBarMessage(ABM_GETTASKBARPOS, &tb);
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_POPUP,
-		tb.rc.left, tb.rc.top, (WND_WIDTH=tb.rc.right), (WND_HEIGHT=tb.rc.bottom-tb.rc.top), NULL, NULL, hInstance, NULL);
+		tb.rc.left, tb.rc.top, (WND_WIDTH = tb.rc.right), (WND_HEIGHT = tb.rc.bottom - tb.rc.top), FindWindow("Shell_TrayWnd", NULL) , NULL, hInstance, NULL);
 
 	if (!hWnd)
-	{
 		return FALSE;
-	}
+
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -125,7 +124,6 @@ int CreateRGB()
 	colorB = GetBValue(cc.rgbResult);
 	return 0;
 }
-
 
 DWORD WINAPI ChangeColor(LPVOID *data)
 {
