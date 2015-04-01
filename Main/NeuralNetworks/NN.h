@@ -47,21 +47,22 @@ double w_i[INPUT_NUM + 1][HIDDEN_NUM], w_h[HIDDEN_NUM + 1][HIDDEN_NUM],
 		w_o[HIDDEN_NUM + 1][OUTPUT_NUM];
 double h_back[HIDDEN_NUM + 1], h2_back[HIDDEN_NUM + 1], y_back[OUTPUT_NUM];
 
-int NNLearning(int learning)
+int NNLearning(int learning, bool fcheck)
 {
 	int learn, sample, i, j, k;
 	double net_input;
 	double e = 0.0;
-	char s[12800] = { 0 };
-	FILE *fp = fopen("w_10.fc", "r+b");
-	if (fp == NULL)
-	{
+	char s[0xFF] = { 0 };
+	FILE *fp;
+
+	if( !fcheck )
 		fp = fopen("w_10.fc", "wb");
-	}
 	else
+		if ( fcheck )
 	{
-		fread(w_i, sizeof(double), (INPUT_NUM + 1)*HIDDEN_NUM, fp);
-		fread(w_o, sizeof(double), (HIDDEN_NUM + 1)*OUTPUT_NUM, fp);
+		fp = fopen("w_10.fc", "r+b");
+		fread(w_i, sizeof(double), (INPUT_NUM + 1) *  HIDDEN_NUM, fp);
+		fread(w_o, sizeof(double), (HIDDEN_NUM + 1) * OUTPUT_NUM, fp);
 		goto BREAK;
 	}
 	srand((unsigned)time(NULL));

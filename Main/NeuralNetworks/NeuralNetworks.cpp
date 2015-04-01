@@ -5,19 +5,9 @@
 #include <CommCtrl.h>
 #include <shellapi.h>
 #include <commdlg.h>
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"") 
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib, "comctl32.lib")
 #define MAX_LOADSTRING 100
-#define WND_WIDTH 1300
-#define WND_HEIGHT 100
-#define ID_NGBUTTON 100
-#define ID_OKBUTTON 101
-#define ID_BLUEBTN 201
-#define ID_GREENBTN 202
-#define ID_YELLOWBTN 203
-#define ID_CHECKBUTTON 102
-#define ID_LEARNINGBUTTON 200
 
 #define SRATE 8192
 
@@ -29,7 +19,8 @@ HWND hOkButton, hText, hWnd;
 int colorR = 0, colorG = 0, colorB = 0;
 int nextColor = 0;
 RECT rc;
-
+int WND_WIDTH = 1300;
+int WND_HEIGHT = 100;
 
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
@@ -46,8 +37,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 	MSG msg;
 	HACCEL hAccelTable;
-	srand((unsigned int)time(0));
-	w = time(0);
+	srand(w = (unsigned int)time(0));
 
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_NEURALNETWORKS, szWindowClass, MAX_LOADSTRING);
@@ -102,7 +92,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	SHAppBarMessage(ABM_GETTASKBARPOS, &tb);
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_POPUP,
-		tb.rc.left, tb.rc.top, WND_WIDTH, WND_HEIGHT, NULL, NULL, hInstance, NULL);
+		tb.rc.left, tb.rc.top, (WND_WIDTH=tb.rc.right), (WND_HEIGHT=tb.rc.bottom-tb.rc.top), NULL, NULL, hInstance, NULL);
 
 	if (!hWnd)
 	{
@@ -144,11 +134,11 @@ DWORD WINAPI ChangeColor(LPVOID *data)
 	while (1)
 	{
 		saveNextColor = NNoutput(0);
-		diff[0] = (double)((GetRValue(saveNextColor) - GetRValue(nextColor)) / 10.0);
-		diff[1] = (double)((GetGValue(saveNextColor) - GetGValue(nextColor)) / 10.0);
-		diff[2] = (double)((GetBValue(saveNextColor) - GetBValue(nextColor)) / 10.0);
+		diff[0] = (double)((GetRValue(saveNextColor) - GetRValue(nextColor)) / 5.0);
+		diff[1] = (double)((GetGValue(saveNextColor) - GetGValue(nextColor)) / 5.0);
+		diff[2] = (double)((GetBValue(saveNextColor) - GetBValue(nextColor)) / 5.0);
 		
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			nextColor += (int)diff[0];
 			nextColor += (int)diff[1] * 256;
@@ -180,6 +170,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	int wmId, wmEvent, trackPos;
 	double starttime, endtime;
+	bool fcheck = false;
 	PAINTSTRUCT ps;
 	HDC hdc;
 
@@ -190,17 +181,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_CREATE:
-
-		CreateWindowEx(0,
-			"BUTTON",
-			"Check",
-			WS_CHILD | WS_VISIBLE,
-			0, 330, 400, 50,
-			hWnd,
-			(HMENU)ID_CHECKBUTTON,
-			hInst, NULL);
 		xc = 0;
-		if (!fopen("w_10.fc", "rb"))
+		if (! (fcheck = fopen("w_10.fc", "rb")) )
 		{
 			for (int i = 0; i < 10; i++)
 			{
@@ -215,12 +197,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					txy[i].y[0] = 0;
 				else
 					txy[i].y[0] = 1;
+
 				if (!selendFlag) count++;
 			}
 		}
 		log << "Start of learning\r\n";
 			starttime = clock();
-				NNLearning(count);
+				NNLearning(count, fcheck);
 			endtime = clock();
 		log << "End of learning\r\n" << (endtime - starttime) / 1000.0 << "sec\r\n";
 
